@@ -1,5 +1,6 @@
 package org.RCarter;
 
+import java.util.Arrays;
 import java.util.Random;
 import org.RCarter.Main.Direction;
 import org.RCarter.Move.MoveThread;
@@ -41,43 +42,6 @@ public class Board {
             list_to_row(cells, Direction.UP, thread.getRow(), i);
         }
 
-//        for (int y = 0; y < cells.length; y++) {
-//            if (y != 0) { // from the bottom row up excluding the bottom row
-//                for (int w = 0; w < cells[0].length; w++) {
-//                    if (cells[y][w].block != null) { // check if there is a block in that row
-//
-//                        int nextLoc = y - 1;
-//
-//                        // iterates up until it finds a block or runs out of room
-//                        while (true) {
-//
-//                            if (cells[nextLoc][w].block != null ) {
-//                                // if the block in question is able to combine with the block it runs into
-//                                if (cells[y][w].block.val == cells[nextLoc][w].block.val) {
-//
-//                                    cells[nextLoc][w].block.val = cells[y][w].block.val + 1;
-//                                    cells[y][w].block = null;
-//
-//                                } else if (cells[nextLoc+1][w].block != cells[y][w].block) {
-//                                    cells[nextLoc+1][w].block = cells[y][w].block;
-//                                    cells[y][w].block = null;
-//                                }
-//                                break;
-//                            }
-//
-//                            if (nextLoc == 0) { // if at the top
-//                                cells[nextLoc][w].block = cells[y][w].block;
-//                                cells[y][w].block = null;
-//                                break;
-//                            }
-//
-//                            nextLoc--;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
         spawnBlock();
 
         System.out.println(this);
@@ -85,44 +49,10 @@ public class Board {
 
     void down() {
 
-        for (int y = cells.length; y >= 0; y--) {
-            if (y < cells.length-1) { // from the bottom row up excluding the bottom row
-                for (int w = 0; w < cells[0].length; w++) {
-                    if (cells[y][w].block != null) { // check if there is a block in that row
-
-                        int nextLoc = y + 1;
-
-                        // iterates down until it finds a block or runs out of room
-                        while (true) {
-
-                            // if PAST bottom
-                            if (nextLoc == cells[0].length) {
-                                cells[nextLoc-1][w].block = cells[y][w].block;
-                                cells[y][w].block = null;
-                                break;
-                            }
-
-                            if (cells[nextLoc][w].block != null ) {
-                                // if the block in question is able to combine with the block it runs into
-                                if (cells[y][w].block.val == cells[nextLoc][w].block.val) {
-
-                                    cells[nextLoc][w].block.val = cells[y][w].block.val + 1;
-                                    cells[y][w].block = null;
-
-                                } else if (cells[nextLoc-1][w].block != cells[y][w].block) {
-                                    // if prev loc is not the current block
-                                    cells[nextLoc-1][w].block = cells[y][w].block;
-                                    cells[y][w].block = null;
-                                }
-                                break;
-                            }
-
-                            nextLoc++;
-                        }
-
-                    }
-                }
-            }
+        for (int i = 0; i < cells[0].length; i++) {
+            MoveThread thread = new MoveThread(row_to_list(cells, Direction.DOWN, i));
+            thread.start();
+            list_to_row(cells, Direction.DOWN, thread.getRow(), i);
         }
 
         spawnBlock();
@@ -132,45 +62,10 @@ public class Board {
 
     void left() {
 
-        for (int w = 0; w < cells[0].length; w++) {
-            if (w != 0) { // left to right, it thru columns skip far left
-                for (int y = 0; y < cells.length; y++) { // for each row (start: TOP)
-                    if (cells[y][w].block != null) { // check if there is a block in that column
-
-                        int nextLoc = w - 1;
-
-                        // iterates up until it finds a block or runs out of room
-                        while (true) {
-
-                            // if find block
-                            if (cells[y][nextLoc].block != null ) {
-
-                                // if can combine
-                                if (cells[y][w].block.val == cells[y][nextLoc].block.val) {
-
-                                    cells[y][nextLoc].block.val = cells[y][w].block.val + 1;
-                                    cells[y][w].block = null;
-
-                                } else if (cells[y][nextLoc+1].block != cells[y][w].block){ // go to the previous block and place it
-                                    cells[y][nextLoc+1].block = cells[y][w].block;
-                                    cells[y][w].block = null;
-                                }
-                                break;
-                            }
-
-                            // if at the top and has not found block
-                            if (nextLoc == 0) {
-                                cells[y][nextLoc].block = cells[y][w].block;
-                                cells[y][w].block = null;
-                                break;
-                            }
-
-                            nextLoc--;
-                        }
-
-                    }
-                }
-            }
+        for (int i = 0; i < cells[0].length; i++) {
+            MoveThread thread = new MoveThread(row_to_list(cells, Direction.LEFT, i));
+            thread.start();
+            list_to_row(cells, Direction.LEFT, thread.getRow(), i);
         }
 
         spawnBlock();
@@ -180,43 +75,10 @@ public class Board {
 
     void right() {
 
-        for (int w = cells[0].length; w >= 0; w--) { // from right to left
-            if (w < cells.length-1) { // exclude far right
-                for (int y = 0; y < cells.length; y++) { // from top to bottom
-                    if (cells[y][w].block != null) { // check if there is a block in that row
-
-                        int nextLoc = w + 1;
-
-                        // iterates down until it finds a block or runs out of room
-                        while (true) {
-
-                            if (nextLoc == cells.length) { // if no blocks in row
-                                cells[y][nextLoc-1].block = cells[y][w].block;
-                                cells[y][w].block = null;
-                                break;
-                            }
-
-                            // if next loc is block
-                            if (cells[y][nextLoc].block != null ) {
-                                // if the block in question is able to combine with the block it runs into
-                                if (cells[y][w].block.val == cells[y][nextLoc].block.val) {
-
-                                    cells[y][nextLoc].block.val = cells[y][w].block.val + 1;
-                                    cells[y][w].block = null;
-
-                                } else if (cells[y][nextLoc-1].block != cells[y][w].block){
-                                    cells[y][nextLoc-1].block = cells[y][w].block;
-                                    cells[y][w].block = null;
-                                }
-                                break;
-                            }
-
-                            nextLoc++;
-                        }
-
-                    }
-                }
-            }
+        for (int i = 0; i < cells[0].length; i++) {
+            MoveThread thread = new MoveThread(row_to_list(cells, Direction.RIGHT, i));
+            thread.start();
+            list_to_row(cells, Direction.RIGHT, thread.getRow(), i);
         }
 
         spawnBlock();
@@ -273,7 +135,32 @@ public class Board {
     }
 
 
-    private void list_to_row(Cell[][] cells, Direction dir, Cell[] row, int i) {
+    private void list_to_row(Cell[][] cells, Direction dir, Cell[] row, int rowIndex) {
+        switch (dir) {
+            case UP -> {
+                // if up, input is a list from top to bottom in the given column
+                for (int i = 0; i < row.length; i++) {
+                    cells[i][rowIndex] = row[i];
+                }
+            }
+            case DOWN -> {
+                // if down, input is a list from bottom to top in the given column
+                for (int i = 0; i < row.length; i++) {
+                    cells[(row.length - 1) - i][rowIndex] = row[i];
+                }
+            }
+            case LEFT -> {
+                cells[rowIndex] = row;
+            }
+            case RIGHT -> {
+                // if right, input is a list from right to left in the given row
+                for (int i = 0; i < row.length; i++) {
+                    cells[rowIndex][(row.length - 1) - i] = row[i];
+                }
+
+            }
+            default -> throw new IllegalArgumentException("Invalid Direction");
+        }
     }
 
     @Override

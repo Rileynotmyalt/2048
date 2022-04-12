@@ -10,6 +10,8 @@ public class MoveThread implements Runnable{
         this.row = row;
     }
 
+    // TODO make universal, it all work now :)
+
     @Override
     public void run() {
         // from top to bottom, skipping the first row
