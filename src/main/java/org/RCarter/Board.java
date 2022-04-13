@@ -1,15 +1,10 @@
 package org.RCarter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
-import org.RCarter.Main.Direction;
-import org.RCarter.Move.MoveThread;
 import org.jetbrains.annotations.NotNull;
 
 public class Board {
@@ -28,26 +23,14 @@ public class Board {
         spawnBlock();
     }
 
-    void spawnBlock() {
-        Random rand = new Random();
-
-        while(true) {
-            int[] point = randomPoint();
-
-            if (cells[point[1]][point[0]].block == null) {
-                cells[point[1]][point[0]].block = new Block(rand.nextInt(2)+1);
-                break;
-            }
-
-        }
-    }
-
     void up() {
         ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         for (int i = 0; i < cells.length; i++) {
-            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.UP, i))));
+            moveThreads.add(
+                    Executors.callable(new MoveThread(row_to_list(cells, Direction.UP, i)))
+            );
         }
 
         try {
@@ -59,6 +42,8 @@ public class Board {
         spawnBlock();
 
         System.out.println(this);
+
+        executorService.shutdown();
     }
 
     void down() {
@@ -66,7 +51,9 @@ public class Board {
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         for (int i = 0; i < cells.length; i++) {
-            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.DOWN, i))));
+            moveThreads.add(
+                    Executors.callable(new MoveThread(row_to_list(cells, Direction.DOWN, i)))
+            );
         }
 
         try {
@@ -78,6 +65,8 @@ public class Board {
         spawnBlock();
 
         System.out.println(this);
+
+        executorService.shutdown();
     }
 
     void left() {
@@ -85,7 +74,9 @@ public class Board {
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         for (int i = 0; i < cells[0].length; i++) {
-            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.LEFT, i))));
+            moveThreads.add(
+                    Executors.callable(new MoveThread(row_to_list(cells, Direction.LEFT, i)))
+            );
         }
 
         try {
@@ -97,6 +88,8 @@ public class Board {
         spawnBlock();
 
         System.out.println(this);
+
+        executorService.shutdown();
     }
 
     void right() {
@@ -104,7 +97,9 @@ public class Board {
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         for (int i = 0; i < cells.length; i++) {
-            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.RIGHT, i))));
+            moveThreads.add(
+                    Executors.callable(new MoveThread(row_to_list(cells, Direction.RIGHT, i)))
+            );
         }
 
         try {
@@ -116,11 +111,67 @@ public class Board {
         spawnBlock();
 
         System.out.println(this);
+
+        executorService.shutdown();
     }
 
 
 
     // utils
+
+    void spawnBlock() {
+        Random rand = new Random();
+        ArrayList<FindEmptySpaces> emptySpaceFinders = new ArrayList<>();
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        List<Future<ArrayList<int[]>>> emptySpaceLists = null;
+        ArrayList<int[]> emptySpaces = new ArrayList<>();
+
+        // for each row
+        for (int i = 0; i < cells.length; i++) {
+            // create a new callable thread to search that row
+            emptySpaceFinders.add(new FindEmptySpaces(cells[i], i));
+        }
+
+        // start all parallel callables
+        try {
+            emptySpaceLists = executorService.invokeAll(emptySpaceFinders);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // get items from threads and append them to one list
+        assert emptySpaceLists != null;
+        for (Future<ArrayList<int[]>> emptySpaceList : emptySpaceLists) {
+            try {
+                emptySpaces.addAll(emptySpaceList.get());
+
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // now we have the list of empty spaces, now do stuff with it
+
+        // check if the list is empty, if empty end game
+        if (emptySpaces.size() == 0) {gameOver();}
+
+        // get random coordinate from given list
+        int[] randomCoordinate = emptySpaces.get(rand.nextInt(emptySpaces.size()));
+        int x = randomCoordinate[0];
+        int y = randomCoordinate[1];
+
+        // set the selected cell coordinate to a value
+        int blockValue = rand.nextInt(2)+1;
+
+        cells[y][x].block = new Block(blockValue);
+
+        executorService.shutdown();
+    }
+
+    private void gameOver() {
+
+    }
+
     int[] randomPoint() {
         Random rand = new Random();
         return new int[]{
@@ -128,16 +179,6 @@ public class Board {
                 rand.nextInt(cells.length)
         };
     }
-
-//    private void wait_for_threads(MoveThread[] moveThreads) {
-//        for (MoveThread thread: moveThreads) {
-//            try {
-//                thread.join();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     public Cell[] row_to_list(Cell[][] board, @NotNull Direction dir, int rowIndex) {
         Cell[] row;
@@ -158,9 +199,9 @@ public class Board {
                     row[(board.length - 1) - i] = board[i][rowIndex];
                 }
             }
-            case LEFT -> {
-                row = board[rowIndex];
-            }
+
+            case LEFT -> row = board[rowIndex];
+
             case RIGHT -> {
                 row = new Cell[board[0].length];
 
@@ -173,35 +214,6 @@ public class Board {
         }
 
         return row;
-    }
-
-
-    private void list_to_row(Cell[][] cells, @NotNull Direction dir, Cell[] row, int rowIndex) {
-        switch (dir) {
-            case UP -> {
-                // if up, input is a list from top to bottom in the given column
-                for (int i = 0; i < row.length; i++) {
-                    cells[i][rowIndex] = row[i];
-                }
-            }
-            case DOWN -> {
-                // if down, input is a list from bottom to top in the given column
-                for (int i = 0; i < row.length; i++) {
-                    cells[(row.length - 1) - i][rowIndex] = row[i];
-                }
-            }
-            case LEFT -> {
-                cells[rowIndex] = row;
-            }
-            case RIGHT -> {
-                // if right, input is a list from right to left in the given row
-                for (int i = 0; i < row.length; i++) {
-                    cells[rowIndex][(row.length - 1) - i] = row[i];
-                }
-
-            }
-            default -> throw new IllegalArgumentException("Invalid Direction");
-        }
     }
 
     @Override

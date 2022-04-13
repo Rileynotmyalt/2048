@@ -1,19 +1,14 @@
-package org.RCarter.Move;
+package org.RCarter;
 
-import org.RCarter.Cell;
 import org.jetbrains.annotations.NotNull;
-
-// TODO change to callable
 
 public class MoveThread implements Runnable {
     private Thread thread;
-    private Cell[] row;
+    private final Cell[] row;
 
     public MoveThread(@NotNull Cell[] row) {
         this.row = row;
     }
-
-    // TODO make universal, it all work now :)
 
     @Override
     public void run() {
@@ -44,7 +39,6 @@ public class MoveThread implements Runnable {
                         break;
                     }
 
-                    // TODO if at the top
                     if (nextLoc == 0) {
                         row[nextLoc].block = row[i].block;
                         row[i].block = null;

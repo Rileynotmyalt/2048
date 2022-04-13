@@ -3,6 +3,13 @@ package org.RCarter;
 import java.awt.*;
 import java.awt.event.*;
 
+/*
+* TODO:
+*  - menu, settings, credits, different color profiles
+*  - different colors for different numbered squares
+*  - square moving animations?
+ */
+
 public class Gui extends Frame {
     public Label hello;
     public Label[][] gridLabels;

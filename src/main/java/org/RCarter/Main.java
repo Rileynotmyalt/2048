@@ -1,20 +1,15 @@
 package org.RCarter;
 
-import java.util.Scanner;
-
 /*
 * TODO:
-*  - Multi-Threading each row for movement detection
+*  - make MoveThread callable, return bool (moved)
+*  - make no new block spawn if no "moved" returned
+*  - end game, simulate all moves on a copied board
+*  - then gui stuff... that'll be fun
  */
 
 public class Main {
     public static Board gameBoard;
-    public enum Direction {
-        UP,
-        DOWN,
-        LEFT,
-        RIGHT
-    }
 
     public static void main(String[] args) {
         Board gameBoard = new Board(4, 4);
