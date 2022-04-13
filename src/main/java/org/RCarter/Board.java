@@ -1,9 +1,16 @@
 package org.RCarter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.RCarter.Main.Direction;
 import org.RCarter.Move.MoveThread;
+import org.jetbrains.annotations.NotNull;
 
 public class Board {
     public Cell[][] cells;
@@ -36,10 +43,17 @@ public class Board {
     }
 
     void up() {
-        for (int i = 0; i < cells[0].length; i++) {
-            MoveThread thread = new MoveThread(row_to_list(cells, Direction.UP, i));
-            thread.start();
-            list_to_row(cells, Direction.UP, thread.getRow(), i);
+        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ExecutorService executorService = Executors.newCachedThreadPool();
+
+        for (int i = 0; i < cells.length; i++) {
+            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.UP, i))));
+        }
+
+        try {
+            executorService.invokeAll(moveThreads);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         spawnBlock();
@@ -48,11 +62,17 @@ public class Board {
     }
 
     void down() {
+        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ExecutorService executorService = Executors.newCachedThreadPool();
 
-        for (int i = 0; i < cells[0].length; i++) {
-            MoveThread thread = new MoveThread(row_to_list(cells, Direction.DOWN, i));
-            thread.start();
-            list_to_row(cells, Direction.DOWN, thread.getRow(), i);
+        for (int i = 0; i < cells.length; i++) {
+            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.DOWN, i))));
+        }
+
+        try {
+            executorService.invokeAll(moveThreads);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         spawnBlock();
@@ -61,11 +81,17 @@ public class Board {
     }
 
     void left() {
+        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ExecutorService executorService = Executors.newCachedThreadPool();
 
         for (int i = 0; i < cells[0].length; i++) {
-            MoveThread thread = new MoveThread(row_to_list(cells, Direction.LEFT, i));
-            thread.start();
-            list_to_row(cells, Direction.LEFT, thread.getRow(), i);
+            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.LEFT, i))));
+        }
+
+        try {
+            executorService.invokeAll(moveThreads);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         spawnBlock();
@@ -74,11 +100,17 @@ public class Board {
     }
 
     void right() {
+        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ExecutorService executorService = Executors.newCachedThreadPool();
 
-        for (int i = 0; i < cells[0].length; i++) {
-            MoveThread thread = new MoveThread(row_to_list(cells, Direction.RIGHT, i));
-            thread.start();
-            list_to_row(cells, Direction.RIGHT, thread.getRow(), i);
+        for (int i = 0; i < cells.length; i++) {
+            moveThreads.add(Executors.callable(new MoveThread(row_to_list(cells, Direction.RIGHT, i))));
+        }
+
+        try {
+            executorService.invokeAll(moveThreads);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         spawnBlock();
@@ -87,8 +119,8 @@ public class Board {
     }
 
 
-    // utils
 
+    // utils
     int[] randomPoint() {
         Random rand = new Random();
         return new int[]{
@@ -96,9 +128,18 @@ public class Board {
                 rand.nextInt(cells.length)
         };
     }
-    // TODO row to list (one func use enums)
 
-    public Cell[] row_to_list(Cell[][] board, Direction dir, int rowIndex) {
+//    private void wait_for_threads(MoveThread[] moveThreads) {
+//        for (MoveThread thread: moveThreads) {
+//            try {
+//                thread.join();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+
+    public Cell[] row_to_list(Cell[][] board, @NotNull Direction dir, int rowIndex) {
         Cell[] row;
         switch (dir){
             case UP -> {
@@ -113,7 +154,7 @@ public class Board {
                 row = new Cell[board.length];
 
                 // for each column from top to bottom
-                for (int i = board.length-1; 0 < i; i--) {
+                for (int i = board.length-1; 0 <= i; i--) {
                     row[(board.length - 1) - i] = board[i][rowIndex];
                 }
             }
@@ -124,7 +165,7 @@ public class Board {
                 row = new Cell[board[0].length];
 
                 // for this row from right to left
-                for (int i = board[0].length-1; 0 < i; i--) {
+                for (int i = board[0].length-1; 0 <= i; i--) {
                     row[(board.length - 1) - i] = board[rowIndex][i];
                 }
             }
@@ -135,7 +176,7 @@ public class Board {
     }
 
 
-    private void list_to_row(Cell[][] cells, Direction dir, Cell[] row, int rowIndex) {
+    private void list_to_row(Cell[][] cells, @NotNull Direction dir, Cell[] row, int rowIndex) {
         switch (dir) {
             case UP -> {
                 // if up, input is a list from top to bottom in the given column

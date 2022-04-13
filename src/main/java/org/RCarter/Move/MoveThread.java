@@ -1,12 +1,15 @@
 package org.RCarter.Move;
 
 import org.RCarter.Cell;
+import org.jetbrains.annotations.NotNull;
 
-public class MoveThread implements Runnable{
+// TODO change to callable
+
+public class MoveThread implements Runnable {
     private Thread thread;
     private Cell[] row;
 
-    public MoveThread(Cell[] row) {
+    public MoveThread(@NotNull Cell[] row) {
         this.row = row;
     }
 
