@@ -11,17 +11,23 @@ import java.awt.event.*;
  */
 
 public class Gui extends Frame {
-    public Label hello;
     public Label[][] gridLabels;
+    public final int BOARD_HEIGHT;
+    public final int BOARD_WIDTH;
+
     // constructor
     Gui(Board gameBoard) {
+        BOARD_HEIGHT = gameBoard.cells.length;
+        BOARD_WIDTH = gameBoard.cells[0].length;
+
+
         setLayout(new GridLayout(1,1));
 
         // grid tab init
-        gridLabels = new Label[gameBoard.cells.length][gameBoard.cells[0].length];
-        Panel gridTab = new Panel(new GridLayout(gameBoard.cells.length,gameBoard.cells[0].length));
-        for (int y = 0; y < gameBoard.cells.length ; y++) {
-            for (int x = 0; x < gameBoard.cells.length ; x++) {
+        gridLabels = new Label[BOARD_HEIGHT][BOARD_WIDTH];
+        Panel gridTab = new Panel(new GridLayout(BOARD_HEIGHT, BOARD_WIDTH));
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            for (int x = 0; x < BOARD_HEIGHT; x++) {
                 Label tempLabel = new Label(
                         (gameBoard.cells[y][x].block != null) ? String.valueOf((int)Math.pow(2, gameBoard.cells[y][x].block.val)) : null
                 );

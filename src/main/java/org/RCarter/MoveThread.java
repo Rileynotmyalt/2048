@@ -2,16 +2,18 @@ package org.RCarter;
 
 import org.jetbrains.annotations.NotNull;
 
-public class MoveThread implements Runnable {
-    private Thread thread;
+import java.util.concurrent.Callable;
+
+public class MoveThread implements Callable<Boolean> {
     private final Cell[] row;
+    private boolean processPerformed;
 
     public MoveThread(@NotNull Cell[] row) {
         this.row = row;
     }
 
     @Override
-    public void run() {
+    public Boolean call() {
         // from top to bottom, skipping the first row
         for (int i = 1; i < row.length; i++) {
             // if cell has a block
@@ -29,19 +31,30 @@ public class MoveThread implements Runnable {
                             row[nextLoc].block.val = row[nextLoc].block.val +1;
                             row[i].block = null;
 
+                            // sets processPerformed to true because an action was performed
+                            processPerformed = true;
+
                         // if not combinable and the previous location is not the current block
                         } else if (row[nextLoc +1].block != row[i].block) {
                             // move to the previous location
                             row[nextLoc+1].block = row[i].block;
                             row[i].block = null;
-                        }
+
+                            // sets processPerformed to true because an action was performed
+                            processPerformed = true;
+
                         // if the previous location is the current block nothing changes
+                        }
                         break;
                     }
 
                     if (nextLoc == 0) {
                         row[nextLoc].block = row[i].block;
                         row[i].block = null;
+
+                        // sets processPerformed to true because an action was performed
+                        processPerformed = true;
+
                         break;
                     }
 
@@ -49,16 +62,9 @@ public class MoveThread implements Runnable {
                 }
             }
         }
-    }
 
-    public void start() {
-        if (thread == null) {
-            thread = new Thread(this);
-            thread.start();
-        }
-    }
-
-    public Cell[] getRow() {
-        return row;
+        // processPerformed will be set to true if any movement occurs any time
+        // if no actions are performed, processPerformed will be false
+        return processPerformed;
     }
 }

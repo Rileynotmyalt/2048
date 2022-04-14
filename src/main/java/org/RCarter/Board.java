@@ -24,22 +24,39 @@ public class Board {
     }
 
     void up() {
-        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ArrayList<Callable<Boolean>> moveThreads = new ArrayList<>();
         ExecutorService executorService = Executors.newCachedThreadPool();
+        List<Future<Boolean>> actionsPerformed = null;
+        boolean processPerformed = false;
 
         for (int i = 0; i < cells.length; i++) {
             moveThreads.add(
-                    Executors.callable(new MoveThread(row_to_list(cells, Direction.UP, i)))
+                    new MoveThread(row_to_list(cells, Direction.UP, i))
             );
         }
 
         try {
-            executorService.invokeAll(moveThreads);
+            actionsPerformed = executorService.invokeAll(moveThreads);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        spawnBlock();
+        // for each row if any process was performed in any row process will be set to true
+        assert actionsPerformed != null;
+        for (Future<Boolean> actionDone: actionsPerformed) {
+            try {
+                if(actionDone.get()) {
+                    processPerformed = true;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // if any process was performed in any row, process will be set to true
+        if (processPerformed) {
+            spawnBlock();
+        }
 
         System.out.println(this);
 
@@ -47,22 +64,39 @@ public class Board {
     }
 
     void down() {
-        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ArrayList<Callable<Boolean>> moveThreads = new ArrayList<>();
         ExecutorService executorService = Executors.newCachedThreadPool();
+        List<Future<Boolean>> actionsPerformed = null;
+        boolean processPerformed = false;
 
         for (int i = 0; i < cells.length; i++) {
             moveThreads.add(
-                    Executors.callable(new MoveThread(row_to_list(cells, Direction.DOWN, i)))
+                    new MoveThread(row_to_list(cells, Direction.DOWN, i))
             );
         }
 
         try {
-            executorService.invokeAll(moveThreads);
+            actionsPerformed = executorService.invokeAll(moveThreads);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        spawnBlock();
+        // for each row if any process was performed in any row process will be set to true
+        assert actionsPerformed != null;
+        for (Future<Boolean> actionDone: actionsPerformed) {
+            try {
+                if(actionDone.get()) {
+                    processPerformed = true;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // if any process was performed in any row, process will be set to true
+        if (processPerformed) {
+            spawnBlock();
+        }
 
         System.out.println(this);
 
@@ -70,22 +104,39 @@ public class Board {
     }
 
     void left() {
-        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ArrayList<Callable<Boolean>> moveThreads = new ArrayList<>();
         ExecutorService executorService = Executors.newCachedThreadPool();
+        List<Future<Boolean>> actionsPerformed = null;
+        boolean processPerformed = false;
 
         for (int i = 0; i < cells[0].length; i++) {
             moveThreads.add(
-                    Executors.callable(new MoveThread(row_to_list(cells, Direction.LEFT, i)))
+                    new MoveThread(row_to_list(cells, Direction.LEFT, i))
             );
         }
 
         try {
-            executorService.invokeAll(moveThreads);
+            actionsPerformed = executorService.invokeAll(moveThreads);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        spawnBlock();
+        // for each row if any process was performed in any row process will be set to true
+        assert actionsPerformed != null;
+        for (Future<Boolean> actionDone: actionsPerformed) {
+            try {
+                if(actionDone.get()) {
+                    processPerformed = true;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // if any process was performed in any row, process will be set to true
+        if (processPerformed) {
+            spawnBlock();
+        }
 
         System.out.println(this);
 
@@ -93,22 +144,39 @@ public class Board {
     }
 
     void right() {
-        ArrayList<Callable<Object>> moveThreads = new ArrayList<>();
+        ArrayList<Callable<Boolean>> moveThreads = new ArrayList<>();
         ExecutorService executorService = Executors.newCachedThreadPool();
+        List<Future<Boolean>> actionsPerformed = null;
+        boolean processPerformed = false;
 
         for (int i = 0; i < cells.length; i++) {
             moveThreads.add(
-                    Executors.callable(new MoveThread(row_to_list(cells, Direction.RIGHT, i)))
+                    new MoveThread(row_to_list(cells, Direction.RIGHT, i))
             );
         }
 
         try {
-            executorService.invokeAll(moveThreads);
+            actionsPerformed = executorService.invokeAll(moveThreads);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        spawnBlock();
+        // for each row if any process was performed in any row process will be set to true
+        assert actionsPerformed != null;
+        for (Future<Boolean> actionDone: actionsPerformed) {
+            try {
+                if(actionDone.get()) {
+                    processPerformed = true;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        // if any process was performed in any row, process will be set to true
+        if (processPerformed) {
+            spawnBlock();
+        }
 
         System.out.println(this);
 
@@ -170,14 +238,6 @@ public class Board {
 
     private void gameOver() {
 
-    }
-
-    int[] randomPoint() {
-        Random rand = new Random();
-        return new int[]{
-                rand.nextInt(cells[0].length),
-                rand.nextInt(cells.length)
-        };
     }
 
     public Cell[] row_to_list(Cell[][] board, @NotNull Direction dir, int rowIndex) {
